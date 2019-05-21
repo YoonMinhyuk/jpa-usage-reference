@@ -54,6 +54,51 @@ public class MemberTest {
 
         //Then
         assertThat(equals).isFalse();
+    }
 
+    @Test
+    public void 팀에_가입되어있지_않은_경우_팀에_가입해야한다() {
+        //Given
+        Member member = createMember();
+        Team team = createTeam();
+
+        //When
+        member.joinTeam(team);
+
+        //Then
+        assertThat(member.getTeam()).isNotNull();
+        assertThat(member.getTeam().getName()).isEqualTo(team.getName());
+    }
+
+    private Team createTeam(Long id, String name) {
+        return Team.builder().id(id).name(name).build();
+    }
+
+    private Team createTeam() {
+        return Team.builder().id(1L).name("TeamA").build();
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void 이미_팀에_가입되어있는_상태에서_다른_팀에_가입할_경우_예외가_발생해야한다() {
+        //Given
+        Member member = createMember();
+        Team teamA = createTeam(1L, "TeamA");
+        Team teamB = createTeam(2L, "TeamB");
+
+        member.joinTeam(teamA);
+
+        //When Then
+        member.joinTeam(teamB);
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void 동일한_팀으로_가입하려고_하는_경우_예외가_발생해야한다() {
+        //Given
+        Member member = createMember();
+        Team team = createTeam();
+
+        //When Then
+        member.joinTeam(team);
+        member.joinTeam(team);
     }
 }

@@ -11,6 +11,7 @@ import javax.persistence.*;
  */
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Getter
 @EqualsAndHashCode(of = "id")
 @ToString
 public class Member {
@@ -43,5 +44,19 @@ public class Member {
     private void checkNullAndSetName(String name) {
         Assert.notNull(name, "name cannot be null");
         this.name = name;
+    }
+
+    public void joinTeam(Team team) {
+        verifyThatAlreadyJoinedTeam(team);
+        checkSameTeam(team);
+        this.team = team;
+    }
+
+    private void verifyThatAlreadyJoinedTeam(Team team) {
+        if (this.team != null && !this.team.equals(team)) throw new RuntimeException("이미 팀에 가입되어있습니다.");
+    }
+
+    private void checkSameTeam(Team team) {
+        if (this.team != null && this.team.equals(team)) throw new RuntimeException("동일한 팀입니다.");
     }
 }
