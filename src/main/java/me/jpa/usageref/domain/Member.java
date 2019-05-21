@@ -59,4 +59,8 @@ public class Member {
     private void checkSameTeam(Team team) {
         if (this.team != null && this.team.equals(team)) throw new RuntimeException("동일한 팀입니다.");
     }
+
+    public void changeName(String name) {
+        checkNullAndSetName(name);
+    }
 }

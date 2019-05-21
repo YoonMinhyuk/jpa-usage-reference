@@ -101,4 +101,26 @@ public class MemberTest {
         member.joinTeam(team);
         member.joinTeam(team);
     }
+
+    @Test
+    public void 이름이_NULL_이_아닐_경우_이름_변경이_가능해야한다() {
+        //Given
+        String newName = "newName";
+        Member member = createMember();
+
+        //When
+        member.changeName(newName);
+
+        //Then
+        assertThat(member.getName()).isEqualTo(newName);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void 이름_변경시_이름이_NULL_이면_예외가_발생해야한다() {
+        //Given
+        Member member = createMember();
+
+        //When Then
+        member.changeName(null);
+    }
 }
