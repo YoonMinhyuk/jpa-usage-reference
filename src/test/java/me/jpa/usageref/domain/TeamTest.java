@@ -69,10 +69,37 @@ public class TeamTest {
         createTeam(1L, "");
     }
 
+
     @Test
-    public void temp() {
-        String packageName = "me.test.tes";
-        boolean matches = packageName.matches("^(me)");
-        System.out.println(matches);
+    public void 가입되어있지않는_멤버일_경우_가입시켜야한다() {
+        //Given
+        Team team = createTeam();
+        Member member = createMember();
+
+        //When
+        team.addMember(member);
+
+        //Then
+        assertThat(team.getMembers().contains(member)).isTrue();
+    }
+
+    private Member createMember(Long id, int age, String name) {
+        return Member.builder().id(id).age(age).name(name).build();
+    }
+
+    private Member createMember() {
+        return this.createMember(1L, 10, "memberA");
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void 이미_가입되어있는_멤버일_경우_예외가_발생해야한다() {
+        //Given
+        Team team = createTeam();
+        Member member = createMember();
+
+        team.addMember(member);
+
+        //When Then
+        team.addMember(member);
     }
 }
