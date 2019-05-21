@@ -172,4 +172,18 @@ public class JpaBasicUsageTest {
         assertThat(entityManager.contains(member)).isFalse();
         assertThat(entityManager.contains(mergedMember)).isTrue();
     }
+
+    @Test
+    @TestDescription("식별자를 이용한 기본 조회 방법을 위한 테스트")
+    public void testSelect() {
+        // Given
+        Member member = createMember();
+        entityManager.persist(member);
+
+        //When
+        Member selectedMember = entityManager.find(Member.class, member.getId());
+
+        //Then
+        assertThat(selectedMember).isNotNull();
+    }
 }
