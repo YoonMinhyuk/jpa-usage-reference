@@ -221,4 +221,31 @@ public class JpqlTest {
         assertThat(selectedMember.getName()).isEqualTo(name);
         assertThat(selectedMember.getAge()).isEqualTo(age);
     }
+
+    @Test
+    @Description({
+            "SELECT 절에서 조회할 대상을 지정하는 것을 Projection 이라 하며",
+            "[ SELECT {Projection 대상} FROM ~ ] 처럼 대상을 선택한다.",
+            "Projection 의 대상은 Entity, Embedded Type, Scala Type 이 있다.",
+            "Scala Type 은 숫자, 문자 등 기본 데이터 타입을 뜻한다.",
+            "=> 조회된 Entity 는 Persistence Context 에 의해 관리되어진다."
+    })
+    public void entity_projection_test() {
+        //Given
+        final String jpql = "select m from Member m where m.age=:age";
+        String name = "minhyuk";
+        int age = 28;
+
+        entityManager.persist(createMember(name, age));
+
+        //When
+        Member selectedMember = entityManager.createQuery(jpql, Member.class)
+                .setParameter("age", age)
+                .getSingleResult();
+
+        //Then
+        assertThat(selectedMember).isNotNull();
+        assertThat(selectedMember.getName()).isEqualTo(name);
+        assertThat(selectedMember.getAge()).isEqualTo(age);
+    }
 }
