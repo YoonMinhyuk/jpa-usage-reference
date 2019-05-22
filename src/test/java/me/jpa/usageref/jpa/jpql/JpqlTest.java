@@ -18,7 +18,10 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @RunWith(SpringRunner.class)
 @DataJpaTest
-@Description("JPQL 은 Entity 의 이름과 이에 대한 별칭을 주어 query 를 작성해야한다.")
+@Description({
+        "JPQL 은 Entity 의 이름과 이에 대한 별칭을 주어 query 를 작성해야한다.",
+        "JPQL 이용시 자동으로 flush 가 발생한다. 기본적으로는 트랜잭션 커밋시에 자동으로 발샹."
+})
 public class JpqlTest {
 
     @PersistenceContext
@@ -43,8 +46,6 @@ public class JpqlTest {
         String name = "minhyuk";
         Member minhyuk = createMember(name, 28);
         entityManager.persist(minhyuk);
-        entityManager.flush();
-        entityManager.clear();
 
         //When
         Member member = entityManager.createQuery(jpql, Member.class).getSingleResult();
@@ -88,8 +89,6 @@ public class JpqlTest {
         Member member = createMember(name, 28);
 
         entityManager.persist(member);
-        entityManager.flush();
-        entityManager.clear();
 
         //When
         TypedQuery<Member> memberTypedQuery = entityManager.createQuery(jpql, Member.class);
@@ -111,8 +110,6 @@ public class JpqlTest {
         final String jpql = "select m from Member m where m.name = 'minhyuk'";
         String name = "minhyuk";
         entityManager.persist(createMember(name, 28));
-        entityManager.flush();
-        entityManager.clear();
 
         //When
         Query query = entityManager.createQuery(jpql);
@@ -146,8 +143,6 @@ public class JpqlTest {
         Member member = createMember(name, age);
 
         entityManager.persist(member);
-        entityManager.flush();
-        entityManager.clear();
 
         //When
         Query query = entityManager.createQuery(jpql);
@@ -171,5 +166,59 @@ public class JpqlTest {
             assertThat(objects[0]).isEqualTo(name);
             assertThat(objects[1]).isSameAs(age);
         });
+    }
+
+    @Test
+    @Description({
+            "Binding 되어지는 Parameter 를 이름으로 구분하는 방법이다.",
+            "이름 기준 파라미터 앞에는 : (콜론) 을 사용하며 : 뒤에 오는 이름이 파라미터 이름이다. 예):name -> name 이 파라미터 이름",
+            "아래의 JPQL 에서 where m.name = :name 처럼 말이다."
+    })
+    public void 이름_기준_파라미터_바인딩_테스트() {
+        //Given
+        final String jpql = "select m from Member m where m.name=:name";
+        String name = "minhyuk";
+        int age = 28;
+        Member member = createMember(name, age);
+
+        entityManager.persist(member);
+
+        //when
+        Member selectedMember = entityManager.createQuery(jpql, Member.class)
+                .setParameter("name", name)
+                .getSingleResult();
+
+        //Then
+        assertThat(selectedMember).isNotNull();
+        assertThat(selectedMember.getName()).isEqualTo(name);
+        assertThat(selectedMember.getAge()).isEqualTo(age);
+    }
+
+    @Test
+    @Description({
+            "Binding 되어지는 Parameter를 위치 기반으로 구분하는 방법이다.",
+            "위치 기준 파라미터를 사용하려면 ? 다음에 위치 값을 주면 된다.",
+            "아래에서 where m.name = ?1 and m.age = ?2 에서 ?1, ?2 처럼 말이다.",
+            "그러나 위치 기준 파라미터 방식보다는 이름 기준 파라미 바인딩 방식을 사용하는 것이 더 명확하다."
+    })
+    public void 위치_기준_파라미터_바인딩_테스트() {
+        //Given
+        final String jpql = "select m from Member m where m.name=?1 and m.age=?2";
+        String name = "minhyuk";
+        int age = 28;
+        Member member = createMember(name, age);
+
+        entityManager.persist(member);
+
+        //When
+        Member selectedMember = entityManager.createQuery(jpql, Member.class)
+                .setParameter(1, name)
+                .setParameter(2, age)
+                .getSingleResult();
+
+        //Then
+        assertThat(selectedMember).isNotNull();
+        assertThat(selectedMember.getName()).isEqualTo(name);
+        assertThat(selectedMember.getAge()).isEqualTo(age);
     }
 }
