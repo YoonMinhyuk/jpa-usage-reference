@@ -1,6 +1,7 @@
 package me.jpa.usageref.jpa.jpql;
 
 import me.jpa.usageref.common.Description;
+import me.jpa.usageref.domain.Address;
 import me.jpa.usageref.domain.Member;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -55,8 +56,12 @@ public class JpqlTest {
         assertThat(member.getName()).isEqualTo(name);
     }
 
+    private Member createMember(String name, int age, Address address) {
+        return Member.builder().name(name).age(age).address(address).build();
+    }
+
     private Member createMember(String name, int age) {
-        return Member.builder().name(name).age(age).build();
+        return this.createMember(name, age, null);
     }
 
     @Test(expected = NoResultException.class)
@@ -247,5 +252,45 @@ public class JpqlTest {
         assertThat(selectedMember).isNotNull();
         assertThat(selectedMember.getName()).isEqualTo(name);
         assertThat(selectedMember.getAge()).isEqualTo(age);
+    }
+
+    @Test
+    @Description({
+            "JPQL에서 Embedded Type은 엔티티와 거의 비슷하게 사용된다.",
+            "그러나 Embedded Tpe 은 조회의 시작점이 될 수 없다는 제약이 존재한다.",
+            "따라서 Embedded Type은 Entity 를 통해서 조회가 되어진다.",
+            "Example) select a from Address a; -> 잘못된 JPQL (Address = Embedded Type)",
+            "select o.address from Order o -> 올바른 JPQL (Order = Entity Type)",
+            "=> Embedded Type은 Entity Type이 아닌 값 타입이다.",
+            "따라서 조회한 Embedded Type은 Persistence Context에 의해 관리되어지지 않는다."
+    })
+    public void embeddedType_projection_test() {
+        //Given
+        final String jpql = "select m.address from Member m";
+        Address address = Address.builder().city("seoul").street("street").build();
+        Member member = createMember("minhyuk", 28, address);
+        entityManager.persist(member);
+
+        //When Then
+        entityManager.createQuery(jpql, Address.class)
+                .getResultStream()
+                .forEach(selectedAddress -> {
+                    assertThat(selectedAddress).isNotNull();
+                    assertThat(selectedAddress.getCity()).isEqualTo(address.getCity());
+                    assertThat(selectedAddress.getStreet()).isEqualTo(address.getStreet());
+                });
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    @Description({
+            "Embedded Type 가 조회의 시작점이 되었을 때 예외가 발생하는 것을 확인하기 위한 테스트"
+    })
+    public void 잘못된_embeddedType_projection_test() {
+        //Given
+        final String jpql = "select a from Address a";
+        entityManager.persist(createMember("minhyuk", 28, Address.builder().city("seoul").street("street").build()));
+
+        //When Then
+        entityManager.createQuery(jpql, Address.class).getResultList();
     }
 }
