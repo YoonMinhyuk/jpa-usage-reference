@@ -293,4 +293,22 @@ public class JpqlTest {
         //When Then
         entityManager.createQuery(jpql, Address.class).getResultList();
     }
+
+    @Test
+    @Description("숫자, 문자, 날짜와 같이 기본 데이터 타입들을 Scala Type 이라 한다.")
+    public void scalaType_projection_test() {
+        //Given
+        Member member = createMember("minhyuk", 28);
+        entityManager.persist(member);
+
+        //When Then
+        entityManager.createQuery("select m.age from Member m", Integer.class)
+                .getResultList()
+                .forEach(age -> assertThat(age).isEqualTo(member.getAge()));
+
+        // avg(), sum() 등을 사용하는 쿼리도 주로 Scala Type 사용
+        Double ageAverage = entityManager.createQuery("select avg(m.age) from Member m", Double.class).getSingleResult();
+        assertThat(ageAverage).isNotNaN();
+        assertThat(ageAverage).isNotZero();
+    }
 }
