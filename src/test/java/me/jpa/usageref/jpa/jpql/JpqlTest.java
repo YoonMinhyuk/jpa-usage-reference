@@ -311,4 +311,23 @@ public class JpqlTest {
         assertThat(ageAverage).isNotNaN();
         assertThat(ageAverage).isNotZero();
     }
+
+    @Test
+    @Description("중복 제거시 SQL 과 같이 distinct 키워드를 사용하면 된다.")
+    public void 중복_제거_테스트() {
+        //Given
+        Member member1 = createMember("member1", 28);
+        Member member2 = createMember("member2", 28);
+
+        entityManager.persist(member1);
+        entityManager.persist(member2);
+
+        //When
+        List<Integer> ages = entityManager.createQuery("select distinct m.age from Member m where m.age=:age", Integer.class)
+                .setParameter("age", 28)
+                .getResultList();
+
+        //Then
+        assertThat(ages.size()).isOne();
+    }
 }
