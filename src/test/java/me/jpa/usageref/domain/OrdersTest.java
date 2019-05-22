@@ -6,7 +6,7 @@ import org.junit.Test;
  * @author Minhyuk Yoon (ymh92730@gmail.com)
  * @since 2019-05-23
  */
-public class OrderTest {
+public class OrdersTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void member_가_null_이면_예외가_발생해야한다() {
@@ -22,8 +22,8 @@ public class OrderTest {
         return Product.builder().name("productA").build();
     }
 
-    private Order createOrder(Member member, Product product) {
-        return Order.builder().member(member).product(product).build();
+    private Orders createOrder(Member member, Product product) {
+        return Orders.builder().member(member).product(product).build();
     }
 
     @Test(expected = IllegalArgumentException.class)

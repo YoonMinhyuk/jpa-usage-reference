@@ -13,7 +13,7 @@ import javax.persistence.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @ToString
-public class Order {
+public class Orders {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -27,7 +27,7 @@ public class Order {
     private Product product;
 
     @Builder
-    public Order(Member member, Product product) {
+    public Orders(Member member, Product product) {
         this.initializeMember(member);
         this.initializeProduct(product);
     }
@@ -41,4 +41,5 @@ public class Order {
         Assert.notNull(product, "product cannot be null");
         this.product = product;
     }
+
 }

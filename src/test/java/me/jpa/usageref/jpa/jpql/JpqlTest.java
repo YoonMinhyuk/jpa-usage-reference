@@ -3,6 +3,8 @@ package me.jpa.usageref.jpa.jpql;
 import me.jpa.usageref.common.Description;
 import me.jpa.usageref.domain.Address;
 import me.jpa.usageref.domain.Member;
+import me.jpa.usageref.domain.Orders;
+import me.jpa.usageref.domain.Product;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -260,7 +262,7 @@ public class JpqlTest {
             "그러나 Embedded Tpe 은 조회의 시작점이 될 수 없다는 제약이 존재한다.",
             "따라서 Embedded Type은 Entity 를 통해서 조회가 되어진다.",
             "Example) select a from Address a; -> 잘못된 JPQL (Address = Embedded Type)",
-            "select o.address from Order o -> 올바른 JPQL (Order = Entity Type)",
+            "select o.address from Orders o -> 올바른 JPQL (Orders = Entity Type)",
             "=> Embedded Type은 Entity Type이 아닌 값 타입이다.",
             "따라서 조회한 Embedded Type은 Persistence Context에 의해 관리되어지지 않는다."
     })
@@ -329,5 +331,44 @@ public class JpqlTest {
 
         //Then
         assertThat(ages.size()).isOne();
+    }
+
+    @Test
+    @Description({
+            "Entity를 대상으로 조회하면 편리하겠지만 꼭! 필요한 데이터들만 선택해서 조회해야할 때도 있다.",
+            "Projection에 여러 값을 선택하면 TypedQuery를 사용할 수 없다. 따라서 Query 를 사용해야한다.",
+            "Entity Type 도 여러 값을 함께 조회할 수 있다.",
+            "물론 이 때 조회한 모든 Entity 는 Persistence Context 에서 관리한다."
+    })
+    public void 다양한_값을_대상으로한_조회_테스트() {
+        //Given
+        Member member = createMember("minhyuk", 28);
+        Product product = Product.builder().name("productA").build();
+        Orders orders = Orders.builder().member(member).product(product).build();
+        entityManager.persist(member);
+        entityManager.persist(product);
+        entityManager.persist(orders);
+
+        //When Then
+        entityManager.createQuery("select m.name, m.age from Member m", Object[].class)
+                .getResultList()
+                .forEach(objects -> {
+                    assertThat(objects[0]).isEqualTo(member.getName());
+                    assertThat(objects[1]).isEqualTo(member.getAge());
+                });
+
+        entityManager.createQuery("select o.member, o.product from Orders o where o.id=:id", Object[].class)
+                .setParameter("id", orders.getId())
+                .getResultStream()
+                .forEach(objects -> {
+                    assertThat(objects[0] instanceof Member).isTrue();
+                    Member selectedMember = (Member) objects[0];
+                    assertThat(selectedMember.getName()).isEqualTo(member.getName());
+                    assertThat(selectedMember.getAge()).isEqualTo(member.getAge());
+
+                    assertThat(objects[1] instanceof Product).isTrue();
+                    Product selectedProduct = (Product) objects[1];
+                    assertThat(selectedProduct.getName()).isEqualTo(product.getName());
+                });
     }
 }
