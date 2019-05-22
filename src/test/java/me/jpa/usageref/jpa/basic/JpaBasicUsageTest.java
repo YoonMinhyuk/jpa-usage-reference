@@ -1,6 +1,6 @@
 package me.jpa.usageref.jpa.basic;
 
-import me.jpa.usageref.common.TestDescription;
+import me.jpa.usageref.common.Description;
 import me.jpa.usageref.domain.Member;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,7 +23,7 @@ public class JpaBasicUsageTest {
     private EntityManager entityManager;
 
     @Test
-    @TestDescription("비영속 상태 테스트")
+    @Description("비영속 상태 테스트")
     public void testNotPersistence() {
         /**
          * 비영속 : PeristenceContext 에 관리되지 않는 상태. 순수한 자바 객체 상태이다. (식별자 존재 X)
@@ -40,7 +40,7 @@ public class JpaBasicUsageTest {
     }
 
     @Test
-    @TestDescription(value = "영속 상태 테스트")
+    @Description(value = "영속 상태 테스트")
     public void testPersistence() {
         /**
          * 영속 : PersistenceContext 에 관리되는 상태. 1차 캐시에 존재한다. (식별자 존재)
@@ -58,7 +58,7 @@ public class JpaBasicUsageTest {
     }
 
     @Test
-    @TestDescription("준영속 상태 테스트")
+    @Description("준영속 상태 테스트")
     public void testDetach() {
         /**
          * 준영속 : PersistenceContext 에 의해 관리되어지다가 특정한 이유로 인해 더 이상 관리되지 않는 상태 (식별자 존재)
@@ -80,7 +80,7 @@ public class JpaBasicUsageTest {
     }
 
     @Test
-    @TestDescription("삭제 상태 테스트")
+    @Description("삭제 상태 테스트")
     public void testRemove() {
         /**
          * 삭제 상태 : PersistenceContext 에 존재하다가 제거되어진 상태. 준영속 상태와 마찬가지로 PersistenceContext 에 의해 관리되어지지 않는다.
@@ -98,7 +98,7 @@ public class JpaBasicUsageTest {
     }
 
     @Test
-    @TestDescription("변경 감지 (Dirty Checking) Test")
+    @Description("변경 감지 (Dirty Checking) Test")
     public void testDirtyChecking() {
         /**
          * Dirty Checking : 영속화 상태의 엔티티의 변경을 감지하여 트랜잭션 커밋 전 변경을 반영하는 것
@@ -120,7 +120,7 @@ public class JpaBasicUsageTest {
     }
 
     @Test
-    @TestDescription("엔티티가 준영속 상태일 경우 병합 (merge) 테스트")
+    @Description("엔티티가 준영속 상태일 경우 병합 (merge) 테스트")
     public void testMergeWhenEntityIsDetach() {
         /**
          * [ Merge ]
@@ -159,7 +159,7 @@ public class JpaBasicUsageTest {
     }
 
     @Test
-    @TestDescription("엔티티가 비영속 상태일 경우 병합 (merge) 테스트")
+    @Description("엔티티가 비영속 상태일 경우 병합 (merge) 테스트")
     public void testMergeWhenEntityIsNotPersistence() {
         //Given
         Member member = createMember();
@@ -174,7 +174,7 @@ public class JpaBasicUsageTest {
     }
 
     @Test
-    @TestDescription("식별자를 이용한 기본 조회 방법을 위한 테스트")
+    @Description("식별자를 이용한 기본 조회 방법을 위한 테스트")
     public void testSelect() {
         // Given
         Member member = createMember();
