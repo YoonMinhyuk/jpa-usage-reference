@@ -33,7 +33,9 @@ public class JpqlTest {
     @Test
     @Description({
             "JPQL 을 이용한 간단한 조회 테스트.",
-            "getSingleResult() 메소드는 조회하는 데이터가 존재하지 않을 시 NoResultException 예외를 던지기 때문에 적절하게 사용."
+            "getSingleResult() 메소드는 조회하는 데이터가 존재하지 않을 시 javax.persistence.NoResultException 예외를 던지며",
+            "결과가 2개 이상일 시 javax.persistence.NonUniqueResultException 예외를 발생시키기 때문에",
+            "적절하게 잘! 사용한다."
     })
     public void 이름이_minhyuk_인_사람을_조회한다() {
         //Given
@@ -59,7 +61,9 @@ public class JpqlTest {
     @Test(expected = NoResultException.class)
     @Description({
             "조회하고자 하는 대상 데이터가 존재하지 않을 경우 getSingleResult() 메소드가 NoResultException 예외를 발생시키는지에 대한 테스트",
-            "getSingleResult() 메소드는 조회하는 데이터가 존재하지 않을 시 NoResultException 예외를 던지기 때문에 적절하게 사용."
+            "getSingleResult() 메소드는 조회하는 데이터가 존재하지 않을 시 javax.persistence.NoResultException 예외를 던지며",
+            "결과가 2개 이상일 시 javax.persistence.NonUniqueResultException 예외를 발생시키기 때문에",
+            "적절하게 잘! 사용한다."
     })
     public void 조회하는_대상이_존재하지_않을_경우_getSingleResult_메소드는_NoResultException_예외를_발생시켜야_한다() {
         //Given
@@ -130,7 +134,8 @@ public class JpqlTest {
             "따라서 createQuery(..) 메소드의 2번째 인자로 타입을 정해줄 수 없기에 이 경우 Query Type 을 반환받을 수 밖에 된다.",
             "그리고 이 경우 query.getSingleResult() 호출시 Object 타입의 결과를 반환하며",
             "query.getResultList() 메소드의 경우 Type Argument 가 존재하지 않는 List 의 결과를 Return 한다.",
-            "그리고 사실 반환된 Object 는 Object[] 형태이기 때문에 형변환을 해서 사용해야한다."
+            "그리고 사실 반환된 Object 는 Object[] 형태이기 때문에 형변환을 해서 사용해야한다.",
+            "배열의 각 인덱스에 저장되어 있는 값은 JQPL projection 시 입력했던 필드 값 순서대로 이다."
     })
     public void projection_을_이용해_타입이_다른_값을_조회할_경우_Query_타입을_반환해야한다() {
         // Given
@@ -153,6 +158,8 @@ public class JpqlTest {
         assertThat(obj).isNotNull();
         assertThat(obj instanceof Object[]).isTrue();
         Object[] objArr = (Object[]) obj;
+
+        //JPQL 에서 보면 select m.name, m.age ~ 로 시작되며 처음 조회하는 필드는 name 이기 때문에 배열의 0번째는 name 이, 1번째에는 age 가 들어가 있다.
         assertThat(objArr[0]).isEqualTo(name);
         assertThat(objArr[1]).isSameAs(age);
 
