@@ -25,15 +25,19 @@ public class Member {
     @Column(nullable = false)
     private String name;
 
+    @Embedded
+    private Address address;
+
     @ManyToOne
     @JoinColumn
     private Team team;
 
     @Builder
-    public Member(Long id, int age, String name) {
+    public Member(Long id, int age, String name, Address address) {
         this.id = id;
         validateAndSetAge(age);
         checkNullAndSetName(name);
+        this.address = address;
     }
 
     private void validateAndSetAge(int age) {
