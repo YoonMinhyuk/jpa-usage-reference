@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
  * @author Minhyuk Yoon (ymh92730@gmail.com)
  * @since 2019-05-22
  */
-@Target(ElementType.METHOD)
+@Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.SOURCE)
 public @interface Note {
     String value();
