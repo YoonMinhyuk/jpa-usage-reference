@@ -1,10 +1,7 @@
 package me.jpa.usageref.jpa.jpql;
 
 import me.jpa.usageref.common.Description;
-import me.jpa.usageref.domain.Address;
-import me.jpa.usageref.domain.Member;
-import me.jpa.usageref.domain.Orders;
-import me.jpa.usageref.domain.Product;
+import me.jpa.usageref.domain.*;
 import me.jpa.usageref.dto.MemberItem;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -477,6 +474,62 @@ public class JpqlTest {
                     assertThat(avg).isEqualTo((double) expectedSum / expectedCount);
                     assertThat(min).isEqualTo(1);
                     assertThat(max).isEqualTo(expectedCount);
+                });
+    }
+
+    @Test
+    @Description({
+            "GROUP BY : 통계 데이터를 구할 때 특정 그룹끼리 묶어준다.",
+            "Ex1) select t.name, count(m.age), sum(m.age), avg(m.age), max(m.age), min(m.age) from Member m left join m.team t group by t.name;",
+            "ㄴ> 팀 이름을 기준으로 그룹 별로 묶어서 통계 데이터를 구한다.",
+            "HAVING : GROUP BY와 함께 사용하는데 GROUP BY 로 그룹화한 통계 데이터를 기준으로 필터링 한다.",
+            "EX2) select t.name, count(m.age), sum(m.age), avg(m.age), max(m.age), min(m.age) from Member m left join m.team t group by t.name HAVING avg(m.age) >= 10;",
+            "ㄴ> 팀 이름을 기준으로 그룹 별로 묶어서 통계 데이터를 구하는데 멤버의 나이가 10살 이상인 그룹을 조회한다.",
+
+            "[ 문법 ]",
+            "GROUP BY Clause : GROUP BY {단일 값 경로 || 별칭}",
+            "HAVING Clause   : HAVING 조건식"
+    })
+    public void groupBy_and_having_절_테스트() {
+        //Given
+        Team teamA = Team.builder().name("teamA").build();
+        Team teamB = Team.builder().name("teamB").build();
+        entityManager.persist(teamA);
+        entityManager.persist(teamB);
+
+        IntStream.range(1, 11)
+                .mapToObj(i -> {
+                    if (i % 2 == 0) {
+                        Member teamAMember = createMember("member" + i, i);
+                        teamAMember.joinTeam(teamA);
+                        teamA.addMember(teamAMember);
+                        return teamAMember;
+                    }
+                    Member teamBMember = createMember("member" + i, i);
+                    teamBMember.joinTeam(teamB);
+                    teamB.addMember(teamBMember);
+                    return teamBMember;
+                })
+                .forEach(entityManager::persist);
+
+        //When Then
+        String jpql = "select t.name, count(m.age), sum(m.age), avg(m.age), max(m.age), min(m.age) from Member m left join m.team t group by t.name having avg(m.age) > 1.0";
+        entityManager.createQuery(jpql, Object[].class)
+                .getResultStream()
+                .forEach(objects -> {
+                    String teamName = objects[0].toString();
+                    long count = (long) objects[1];
+                    long ageSum = (long) objects[2];
+                    double ageAvg = (double) objects[3];
+                    int maxAge = (int) objects[4];
+                    int minAge = (int) objects[5];
+
+                    System.out.println("Team Name : " + teamName);
+                    System.out.println("COUNT : " + count);
+                    System.out.println("SUM : " + ageSum);
+                    System.out.println("AVG : " + ageAvg);
+                    System.out.println("MAX : " + maxAge);
+                    System.out.println("MIN : " + minAge);
                 });
     }
 }
