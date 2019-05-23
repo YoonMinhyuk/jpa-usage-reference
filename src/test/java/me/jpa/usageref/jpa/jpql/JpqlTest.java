@@ -13,6 +13,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.persistence.*;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static java.util.stream.Collectors.toList;
@@ -422,5 +423,60 @@ public class JpqlTest {
 
         //Then
         assertThat(members.size()).isEqualTo(10);
+    }
+
+    @Test
+    @Description({
+            "[ 집합 ]",
+            "집합은 집합 함수와 함께 통계 정보를 구할 때 사용.",
+            "ex) select count(m), sum(m.age), avg(m.age), max(m.age), min(m.age) from Member as m => 회원수, 나이 합, 평균 나이, 최대 나이, 최소 나이를 조회하는 SELECT 문",
+            "집합 함수",
+            "1. COUNT     :  결과 수를 구한다.                                    Return Type Long",
+            "2. MAX, MIN  :  최대, 최소 값을 구한다. 문자, 숫자, 날짜 등에 사용.",
+            "3. AVG       :  평균 값을 구한다. 숫자 타입에만 사용할 수 있다.             Return Type Double",
+            "4. SUM       :  합을 구한다. 숫자 타입만 사용할 수 있다.",
+
+            "Return Type  :  정수 합 - Long",
+            "             :  소수 합 - Double",
+            "             :  BigInteger 합 - BigInteger",
+            "             :  BigDecimal 합 - BigDecimal",
+
+            "[ 참고 사항] ",
+            "1. NULL 값은 무시하므로 통계에 잡하지 않는다. (Distinct 가 정의되어 있어도 무시됌.)",
+            "2. 만약 값이 없는데 SUM, AVG, MAX, MIN 함수를 사용하면 NULL 값이 된다. 단, COUNT 는 0이 된다.",
+            "3. DISTINCT 를 집합 함수 안에 사용해서 중복된 값을 제거하고 나서 집합을 구할 수 있다.",
+            "- ex) select count(distinct m.age) from Member as m",
+            "4. DISTINCT 를 COUNT 에서 사용할 때 Embedded Type 은 지원하지 않는다."
+    })
+    public void 집합_함수_test() {
+        //Given
+        IntStream.range(1, 101)
+                .mapToObj(i -> Member.builder()
+                        .name("name" + i)
+                        .age(i)
+                        .build())
+                .collect(Collectors.toList())
+                .forEach(entityManager::persist);
+
+        //When Then
+        final String jpql = "select count(m), sum(m.age), avg(m.age), min(m.age), max(m.age) from Member m";
+        entityManager.createQuery(jpql, Object[].class)
+                .getResultStream()
+                .forEach(objects -> {
+                    long count = (long) objects[0];
+                    long sum = (long) objects[1];
+                    double avg = (double) objects[2];
+                    int min = (int) objects[3];
+                    int max = (int) objects[4];
+
+                    long expectedCount = 100;
+                    long expectedSum = 100 * (100 + 1) / 2;
+
+                    assertThat(count).isEqualTo(expectedCount);
+                    assertThat(sum).isEqualTo(expectedSum);
+                    assertThat(avg).isEqualTo((double) expectedSum / expectedCount);
+                    assertThat(min).isEqualTo(1);
+                    assertThat(max).isEqualTo(expectedCount);
+                });
     }
 }
