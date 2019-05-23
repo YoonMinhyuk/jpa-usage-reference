@@ -13,7 +13,9 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.persistence.*;
 import java.util.List;
+import java.util.stream.IntStream;
 
+import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -396,6 +398,29 @@ public class JpqlTest {
         assertThat(memberItem).isNotNull();
         assertThat(memberItem.getId()).isEqualTo(member.getId());
         assertThat(memberItem.getName()).isEqualTo(member.getName());
+    }
 
+    @Test
+    @Description({
+            "데이터 조회시 결과를 원하는 양만큼 끊어서 조회하는 paging 처리를 위한 테스트"
+    })
+    public void pagination_test() {
+        //Given
+        IntStream.range(0, 100)
+                .mapToObj(i -> Member.builder()
+                        .name("name" + i)
+                        .age(i)
+                        .build())
+                .collect(toList())
+                .forEach(entityManager::persist);
+
+        //When
+        List<Member> members = entityManager.createQuery("select m from Member m", Member.class)
+                .setFirstResult(0)
+                .setMaxResults(10)
+                .getResultList();
+
+        //Then
+        assertThat(members.size()).isEqualTo(10);
     }
 }
