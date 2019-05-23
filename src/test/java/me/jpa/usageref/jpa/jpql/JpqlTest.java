@@ -5,6 +5,7 @@ import me.jpa.usageref.domain.Address;
 import me.jpa.usageref.domain.Member;
 import me.jpa.usageref.domain.Orders;
 import me.jpa.usageref.domain.Product;
+import me.jpa.usageref.dto.MemberItem;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -370,5 +371,31 @@ public class JpqlTest {
                     Product selectedProduct = (Product) objects[1];
                     assertThat(selectedProduct.getName()).isEqualTo(product.getName());
                 });
+    }
+
+    @Test
+    @Description({
+            "SELECT 절 다음에 NEW 명령어를 사용하면 반환받을 클래스를 지정할 수 있는데",
+            "이 때 클래스의 생서자에 JPQL 조회 결과를 넘겨줄 수 있다.",
+            "또한 TypeQuery를 사용할 수 있어서 지루한 객체 변환 작업을 줄일 수 있다.",
+            "[ NEW 명령어를 사용할 때 주의 사항 ]",
+            "- 패키지 명을 포함한 전체 클래스 명을 입력해야 한다.",
+            "- 순서와 타입이 일치하는 생성자가 필요하다."
+    })
+    public void 생성자_projection_test() {
+        //Given
+        Member member = createMember("minhyuk", 28);
+        entityManager.persist(member);
+
+        //When
+        MemberItem memberItem = entityManager.createQuery("select new me.jpa.usageref.dto.MemberItem(m.id, m.name) from Member m where m.id =:id", MemberItem.class)
+                .setParameter("id", member.getId())
+                .getSingleResult();
+
+        //Then
+        assertThat(memberItem).isNotNull();
+        assertThat(memberItem.getId()).isEqualTo(member.getId());
+        assertThat(memberItem.getName()).isEqualTo(member.getName());
+
     }
 }
